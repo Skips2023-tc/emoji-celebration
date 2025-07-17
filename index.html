@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>World Emoji Day Celebration</title>
+    <!-- Load Tailwind CSS for modern styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Load Inter font from Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    <!-- Internal CSS for emoji animations -->
+    <style>
+        /* Apply Inter font to the body and hide overflow to prevent scrollbars when emojis appear */
+        body {
+            font-family: 'Inter', sans-serif;
+            overflow: hidden;
+        }
+
+        /* Styles for the emoji overlay container */
+        .emoji-overlay {
+            position: fixed; /* Position fixed to cover the entire viewport */
+            top: 0;
+            left: 0;
+            width: 100vw; /* Full viewport width */
+            height: 100vh; /* Full viewport height */
+            overflow: hidden; /* Hide any emojis that go beyond the screen */
+            pointer-events: none; /* Allows clicks to pass through to elements beneath the overlay */
+            z-index: 999; /* Ensure the overlay is on top of other content */
+            background-color: rgba(255, 255, 255, 0.8); /* Semi-transparent white background */
+            transition: opacity 0.5s ease-out; /* Smooth fade-in/out transition */
+            opacity: 0; /* Initially hidden */
+            visibility: hidden; /* Initially not visible */
+        }
+
+        /* Class to make the emoji overlay active (visible) */
+        .emoji-overlay.active {
+            opacity: 1; /* Fully opaque */
+            visibility: visible; /* Make visible */
+        }
+
+        /* Styles for individual emojis */
+        .emoji {
+            position: absolute; /* Absolute positioning for random placement */
+            font-size: 2rem; /* Base font size for emojis */
+            opacity: 0; /* Start hidden for animation */
+            transform: scale(0.5) rotate(0deg); /* Start small and unrotated */
+            animation: popIn 1s forwards; /* Apply popIn animation */
+        }
+
+        /* Keyframe animation for emojis appearing */
+        @keyframes popIn {
+            0% {
+                opacity: 0;
+                transform: scale(0.5) rotate(0deg); /* Start small and unrotated */
+            }
+            70% {
+                opacity: 1;
+                transform: scale(1.2) rotate(360deg); /* Overshoot slightly and rotate */
+            }
+            100% {
+                opacity: 1;
+                transform: scale(1) rotate(360deg); /* Settle at normal size and rotation */
+            }
+        }
+    </style>
+</head>
+<!-- Body with a beautiful gradient background and centered content -->
+<body class="bg-gradient-to-br from-purple-400 to-pink-500 min-h-screen flex items-center justify-center">
+    <!-- Main content card -->
+    <div class="text-center p-8 bg-white rounded-xl shadow-2xl max-w-lg mx-auto">
+        <h1 class="text-4xl font-bold text-gray-800 mb-6">Happy World Emoji Day! &#x1F389;</h1>
+        <p class="text-lg text-gray-600 mb-8">
+            Click the button below to celebrate with a shower of emojis!
+        </p>
+        <!-- Button to trigger the emoji burst -->
+        <button id="emojiButton" class="px-8 py-4 bg-blue-600 text-white font-semibold rounded-full shadow-lg hover:bg-blue-700 transition duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-blue-300">
+            Unleash Emojis!
+        </button>
+    </div>
+
+    <!-- Overlay where emojis will be displayed -->
+    <div id="emojiOverlay" class="emoji-overlay"></div>
+
+    <!-- JavaScript for emoji animation -->
+    <script>
+        // Ensure the DOM is fully loaded before running the script
+        document.addEventListener('DOMContentLoaded', () => {
+            // Get references to the button and the emoji overlay
+            const emojiButton = document.getElementById('emojiButton');
+            const emojiOverlay = document.getElementById('emojiOverlay');
+
+            // Array of various emojis to choose from
+            const emojis = [
+                '😀', '😃', '😄', '😁', '😆', '😅', '😂', '🤣', '😊', '😇', '🙂', '🙃', '😉', '😌', '😍', '🥰', '😘', '😗', '😙', '😚',
+                '😋', '😛', '😜', '🤪', '😝', '🤩', '🥳', '🎉', '🎊', '✨', '🌟', '💫', '🎁', '🎈', '🎂', '🍰', '🧁', '🍪', '🍩', '🍫',
+                '🍬', '🍭', '🍦', '🍧', '🍓', '🍒', '🍎', '🍊', '🍋', '🍇', '🍉', '🍍', '🥭', '🥝', '🍅', '🍆', '🥑', '🥦', '🥬', '🥒',
+                '🌶️', '🌽', '🥕', '🥔', '🍠', '🥐', '🍞', '🥖', '🥨', '🧀', '🥚', '🍳', '🥞', '🧇', '🥓', '🥩', '🍗', '🍖', '🍔', '🍟',
+                '🍕', '🌭', '🥪', '🌮', '🌯', '🥙', '🍜', '🍝', '🍣', '🍤', '🍚', '🍙', '🍘', '🍥', '🍡', '🍢', '🍶', '🥂', '🍾', '🍷',
+                '🍸', '🍹', '🍻', '🍺', '🧊', '☕', '🍵', '🥛', '🍼', '🍯', '🥄', '🍴', '🍽️', '🧡', '💛', '💚', '💙', '💜', '🤎', '🖤',
+                '🤍', '❤️‍🔥', '💯', '👍', '👎', '👏', '🙌', '🙏', '💪', '🧠', '👀', '👂', '👃', '👄', '💋', '💅', '🦶', '🦵', '🦾', '🦿',
+                '🌈', '☀️', '☁️', '🌧️', '⚡', '❄️', '🔥', '💧', '🌊', '🌳', '🌲', '🌴', '🌱', '🌷', '🌸', '🌹', '🌻', '🌼', '🌾', '🍂',
+                '🍁', '🍄', '🌰', '🌍', '🌎', '🌏', '🌕', '🌖', '🌗', '🌘', '🌑', '🌒', '🌓', '🌔', '🌙', '⭐', '💫', '☄️', '💥', '🔥', '💯'
+            ];
+
+            // Add click event listener to the button
+            emojiButton.addEventListener('click', () => {
+                emojiOverlay.innerHTML = ''; // Clear any previously generated emojis
+                emojiOverlay.classList.add('active'); // Add 'active' class to show the overlay
+
+                const numEmojis = 150; // Define the number of emojis to generate
+
+                // Loop to create and position each emoji
+                for (let i = 0; i < numEmojis; i++) {
+                    const emojiSpan = document.createElement('span'); // Create a new span element
+                    emojiSpan.classList.add('emoji'); // Add the 'emoji' class for styling
+                    // Set the text content to a random emoji from the array
+                    emojiSpan.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+
+                    // Generate random positions within the viewport for each emoji
+                    const left = Math.random() * 100; // Random percentage from left (0-100vw)
+                    const top = Math.random() * 100; // Random percentage from top (0-100vh)
+                    emojiSpan.style.left = `${left}vw`;
+                    emojiSpan.style.top = `${top}vh`;
+
+                    // Randomize the font size of each emoji for variety
+                    emojiSpan.style.fontSize = `${Math.random() * 3 + 1.5}rem`; // Size between 1.5rem and 4.5rem
+
+                    // Stagger the animation start time for a more dynamic effect
+                    emojiSpan.style.animationDelay = `${i * 0.02}s`;
+
+                    emojiOverlay.appendChild(emojiSpan); // Add the emoji to the overlay
+                }
+
+                // Set a timeout to hide the emojis after 5 seconds
+                setTimeout(() => {
+                    emojiOverlay.classList.remove('active'); // Remove 'active' class to fade out
+                    // After the fade-out transition, clear the emojis from the DOM
+                    setTimeout(() => {
+                        emojiOverlay.innerHTML = '';
+                    }, 500); // This delay matches the CSS transition duration for opacity
+                }, 5000); // Emojis will remain visible for 5 seconds
+            });
+        });
+    </script>
+</body>
+</html>
